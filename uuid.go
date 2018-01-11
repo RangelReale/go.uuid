@@ -368,6 +368,48 @@ func (u *NullUUID) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// MarshalText implements the encoding.TextMarshaler interface.
+// The encoding is the same as returned by String.
+func (u NullUUID) MarshalText() (text []byte, err error) {
+	if u.Valid == false {
+		return []byte(""), nil
+	}
+	return u.UUID.MarshalText()
+}
+
+// UnmarshalText implements the encoding.TextUnmarshaler interface.
+// Following formats are supported:
+// "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+// "{6ba7b810-9dad-11d1-80b4-00c04fd430c8}",
+// "urn:uuid:6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+func (u *NullUUID) UnmarshalText(text []byte) (err error) {
+	if bytes.Equal(text, []byte("")) {
+		u.UUID, u.Valid = Nil, false
+		return nil
+	}
+	u.Valid = true
+	return u.UUID.UnmarshalText(text)
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+func (u NullUUID) MarshalBinary() (data []byte, err error) {
+	if u.Valid == false {
+		return nil, nil
+	}
+	return u.UUID.MarshalBinary()
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+// It will return error if the slice isn't 16 bytes long.
+func (u *NullUUID) UnmarshalBinary(data []byte) (err error) {
+	if bytes.Equal(data, []byte("")) {
+		u.UUID, u.Valid = Nil, false
+		return nil
+	}
+	u.Valid = true
+	return u.UUID.UnmarshalBinary(data)
+}
+
 // FromBytes returns UUID converted from raw byte slice input.
 // It will return error if the slice isn't 16 bytes long.
 func FromBytes(input []byte) (u UUID, err error) {
