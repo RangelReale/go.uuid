@@ -410,6 +410,14 @@ func (u *NullUUID) UnmarshalBinary(data []byte) (err error) {
 	return u.UUID.UnmarshalBinary(data)
 }
 
+// GetBSON returns data as bson for mgo
+func (u NullUUID) GetBSON() (interface{}, error) {
+	if u.Valid == false {
+		return nil, nil
+	}
+	return u.UUID.String(), nil
+}
+
 // FromBytes returns UUID converted from raw byte slice input.
 // It will return error if the slice isn't 16 bytes long.
 func FromBytes(input []byte) (u UUID, err error) {
